@@ -8,7 +8,7 @@ from tempfile import mkstemp
 
 
 # executable file from `readability-cli` package
-CLI_PATH = Path('/usr/local/bin/readable')
+CLI_PATH = Path('/home/codespace/nvm/current/bin/readable')
 
 
 def main():

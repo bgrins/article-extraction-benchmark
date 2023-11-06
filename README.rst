@@ -145,7 +145,7 @@ boilerpipe requires a custom installation: use python2, you also need Java
 go-readability requires a custom installation: see README in ``extractors/go_readability``.
 
 Readability.js require a custom installation: install nodejs and install cli tool:
-``npm install -g readability-cli@2.2.1-pre``
+``npm install -g readability-cli@2.4.5``
 
 Go-DomDistiller requires a custom installation: see README in ``extractors/go_domdistiller``.
 
