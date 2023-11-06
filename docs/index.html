@@ -2,8 +2,113 @@
 <html>
     <head>
         <meta charset="utf-8"/>
+        <style type="text/css">
+            .article {
+                overflow-x: scroll;
+                height: 500px;
+                display: flex;
+            }
+            .article iframe {
+                width: 500px;
+            }
+            header {
+                position: sticky;
+                display: flex;
+                top: 0;
+                background: white;
+            }
+            header h2 {
+                display: inline-block;
+                margin: 0;
+                width: 500px;
+            }
+        </style>
     </head>
     <body>
+        <header>
+            <h2>Ground Truth</h2>
+            <h2>Readability</h2>
+            <h2>Trafilatura</h2>
+            <h2>Diffbot</h2>
+            <h2>AutoExtract</h2>
+        </header>
+<script src="./diff-match-patch.js"></script>
+<script type="module">
 
+    var dmp = new diff_match_patch();
+
+    // http://bgrins.github.io/browser-diff/
+    function getDiff(text1, text2, opts) {
+        text1 = text1 || "";
+        text2 = text2 || "";
+
+        opts = opts || {};
+        opts.timeout = opts.timeout || 1;
+        opts.cost = opts.cost || 4;
+        opts.cleanup = opts.cleanup || "semantic";
+
+
+        var ms_start = (new Date()).getTime();
+        var d = dmp.diff_main(text1, text2);
+        var ms_end = (new Date()).getTime();
+
+        if (opts.cleanup === "semantic") {
+            dmp.diff_cleanupSemantic(d);
+        }
+        if (opts.cleanup === "efficiency") {
+            dmp.diff_cleanupEfficiency(d);
+        }
+
+        return dmp.diff_prettyHtml(d);
+    }
+
+	function escapeHTML(string) {
+		const lookup = {
+			'&': "&amp;",
+			'"': "&quot;",
+			'\'': "&apos;",
+			'<': "&lt;",
+			'>': "&gt;"
+		};
+		return string.replace( /[&"'<>]/g, c => lookup[c] );
+	}
+
+    (async () => {
+        let ground_truth_results = await (await fetch("../ground-truth.json")).json();
+        let readability_js_results = await (await fetch("../output/readability_js.json")).json();
+        let trafilatura_results = await (await fetch("../output/trafilatura.json")).json();
+        let diffbot_results = await (await fetch("../output/Diffbot.json")).json();
+        let autoextract_results = await (await fetch("../output/AutoExtract.json")).json();
+        let show_diffs = true;
+
+        function getOutputForLib(articleBody, groundTruthArticleBody) {
+            let output = escapeHTML(articleBody);
+            if (show_diffs) {
+                output = getDiff(escapeHTML(groundTruthArticleBody), escapeHTML(articleBody), {
+                 cleanup: "none", // "none", "semantic", "efficiency"
+                });
+            }
+    
+            let frame = document.createElement("iframe");
+            frame.srcdoc = `<pre style="white-space: pre-wrap">${output}</pre>`
+            return frame;
+        }
+        for (let key in ground_truth_results) {
+            let article = document.createElement("div");
+            article.classList.add("article");
+            let ground_truth_frame = document.createElement("iframe");
+            ground_truth_frame.srcdoc = `<pre style="white-space: pre-wrap">${escapeHTML(ground_truth_results[key].articleBody)}</pre>`
+            article.append(ground_truth_frame);
+
+            article.append(getOutputForLib(readability_js_results[key].articleBody, ground_truth_results[key].articleBody))
+            article.append(getOutputForLib(trafilatura_results[key].articleBody, ground_truth_results[key].articleBody))
+            article.append(getOutputForLib(diffbot_results[key].articleBody, ground_truth_results[key].articleBody))
+            article.append(getOutputForLib(autoextract_results[key].articleBody, ground_truth_results[key].articleBody))
+
+            document.body.append(article)
+        }
+    })();
+
+</script>
     </body>
 </html>
