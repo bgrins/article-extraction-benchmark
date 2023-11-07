@@ -11,6 +11,9 @@
             .article iframe {
                 width: 500px;
             }
+            .title {
+                margin: 5px 0;
+            }
             header {
                 position: sticky;
                 display: flex;
@@ -94,6 +97,14 @@
             return frame;
         }
         for (let key in ground_truth_results) {
+            let title = document.createElement("div");
+            title.classList.add("title");
+            let link = document.createElement("a");
+            link.href = ground_truth_results[key].url;
+            link.innerText = ground_truth_results[key].url;
+            title.append(link);
+            document.body.append(title);
+
             let article = document.createElement("div");
             article.classList.add("article");
             let ground_truth_frame = document.createElement("iframe");
